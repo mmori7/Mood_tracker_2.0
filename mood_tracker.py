@@ -13,7 +13,12 @@ load_dotenv()
 # Set up Gemini API key
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 
-# File path for mood history
+# File path for mood historyimport tempfile
+import tempfile
+# Create a temporary file path
+FILE_PATH = os.path.join(tempfile.gettempdir(), "mood_history.csv")
+
+
 
 # Use a temporary directory for Streamlit Cloud
 if "STREAMLIT" in os.environ:
@@ -24,38 +29,32 @@ else:
 
 
 # Initialize CSV with headers if it doesn't exist
+
 def initialize_csv():
+    """Ensure the CSV file exists before writing to it."""
     if not os.path.exists(FILE_PATH):
         df = pd.DataFrame(columns=['Date', 'Input', 'Mood', 'Detailed Analysis'])
         df.to_csv(FILE_PATH, index=False)
 
-# Define mood logging function
+
 def log_mood(user_input, detailed_analysis):
-    """Logs patient mood into a CSV file for long-term tracking."""
-    # Extract simple mood classification (e.g., Positive, Negative, Neutral)
+    """Logs mood entries into a CSV file."""
+    simple_mood = "Neutral"
     if "negative" in detailed_analysis.lower():
         simple_mood = "Negative"
     elif "positive" in detailed_analysis.lower():
         simple_mood = "Positive"
-    else:
-        simple_mood = "Neutral"
 
-    # Clean up detailed analysis to avoid formatting issues
     cleaned_analysis = detailed_analysis.replace("\n", " ").replace('"', "'")
-    
-    # Prepare log entry
     date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    log_entry = pd.DataFrame(
-        [[date, user_input, simple_mood, cleaned_analysis]],
-        columns=['Date', 'Input', 'Mood', 'Detailed Analysis']
-    )
 
-    file_path = "/Users/mohammad/Downloads/Anum_Agent/mood_history.csv"
-    # If the file doesn't exist, create it with headers
-    if not os.path.exists(file_path):
-        log_entry.to_csv(file_path, mode='w', header=True, index=False)
+    log_entry = pd.DataFrame([[date, user_input, simple_mood, cleaned_analysis]],
+                             columns=['Date', 'Input', 'Mood', 'Detailed Analysis'])
+
+    if not os.path.exists(FILE_PATH):
+        log_entry.to_csv(FILE_PATH, mode='w', header=True, index=False)
     else:
-        log_entry.to_csv(file_path, mode='a', header=False, index=False)
+        log_entry.to_csv(FILE_PATH, mode='a', header=False, index=False)
 
 
 # Define weekly report function
