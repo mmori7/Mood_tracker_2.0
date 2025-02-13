@@ -64,8 +64,6 @@ This project is licensed under the MIT License.
 ✅ Removes duplicate sections.  
 ✅ Keeps everything structured professionally.  
 
-Now, your **README.md** will render perfectly on GitHub! 🚀
-
 
 
 
