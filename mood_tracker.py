@@ -14,7 +14,14 @@ load_dotenv()
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 
 # File path for mood history
-FILE_PATH = "/Users/mohammad/Downloads/Anum_Agent/mood_history.csv"
+
+# Use a temporary directory for Streamlit Cloud
+if "STREAMLIT" in os.environ:
+    FILE_PATH = "/tmp/mood_history.csv"  # Streamlit Cloud allows writing here
+else:
+    FILE_PATH = "mood_history.csv"  # Local path for development
+
+
 
 # Initialize CSV with headers if it doesn't exist
 def initialize_csv():
