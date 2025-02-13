@@ -59,36 +59,26 @@ def log_mood(user_input, detailed_analysis):
 
 # Define weekly report function
 def generate_weekly_report():
-    """Generates and saves a weekly mood report based on logged moods."""
-    if not os.path.exists(FILE_PATH) or os.stat(FILE_PATH).st_size == 0:
+    """Generates an automated progress report based on mood history."""
+    file_path = "/Users/mohammad/Downloads/Anum_Agent/mood_history.csv"
+
+    if not os.path.exists(file_path):
         return "No mood history available yet."
 
     try:
-        df = pd.read_csv(FILE_PATH)
-        if df.empty or 'Date' not in df.columns or 'Mood' not in df.columns:
+        df = pd.read_csv(file_path)
+        if df.empty:
             return "No mood history available yet."
         
-        # Convert Date to datetime format
-        df['Date'] = pd.to_datetime(df['Date']).dt.date
-
-        # Filter last 7 days
-        last_week = df[df['Date'] >= (datetime.now().date() - pd.Timedelta(days=7))]
-
-        if last_week.empty:
-            return "No mood history for the past week."
-
-        # Get mood count summary
-        mood_summary = last_week['Mood'].value_counts().to_dict()
-
-        # Save the weekly summary to a new CSV
-        weekly_report_path = os.path.join(tempfile.gettempdir(), "weekly_report.csv")
-        report_df = pd.DataFrame(mood_summary.items(), columns=['Mood', 'Count'])
-        report_df.to_csv(weekly_report_path, index=False)
-
-        return mood_summary
+        if 'Date' not in df.columns or 'Mood' not in df.columns:
+            return "CSV file is missing required columns."
+        
+        df['Date'] = pd.to_datetime(df['Date'])
+        last_week = df[df['Date'] >= (datetime.now() - pd.Timedelta(days=7))]
+        summary = last_week['Mood'].value_counts().to_dict()
+        return summary
     except Exception as e:
-        return f"Error generating report: {e}"
-
+        return f"Error reading CSV: {e}"
 
 
 # Define plot function for mood trends
@@ -181,12 +171,9 @@ st.subheader("📈 Mood Trends Over Time")
 plot_mood_trends()
 
 # Download Mood History
-st.subheader("📥 Download Weekly Mood Report")
-weekly_report_path = os.path.join(tempfile.gettempdir(), "weekly_report.csv")
-
-if os.path.exists(weekly_report_path) and os.stat(weekly_report_path).st_size > 0:
-    with open(weekly_report_path, "rb") as file:
-        st.download_button(label="Download Weekly Report", data=file, file_name="weekly_report.csv", mime="text/csv")
+st.subheader("📥 Download Mood Report")
+if os.path.exists(FILE_PATH) and os.stat(FILE_PATH).st_size > 0:
+    with open(FILE_PATH, "rb") as file:
+        st.download_button(label="Download CSV", data=file, file_name="mood_history.csv", mime="text/csv")
 else:
-    st.warning("⚠️ No weekly report available yet.")
-
+    st.warning("⚠️ No mood history available yet.")
