@@ -1,0 +1,35 @@
+documentation:
+  - README.md
+  - '**/*.md'
+
+tests:
+  - tests/**/*
+  - '**/test_*.py'
+
+dependencies:
+  - requirements.txt
+  - 'pyproject.toml'
+  - 'setup.py'
+
+ui:
+  - '**/*.py'
+  - any: ['**/mood_tracker.py']
+    all: ['**/streamlit']
+
+workflow:
+  - '.github/workflows/**'
+
+configuration:
+  - '**/*.ini'
+  - '**/*.yaml'
+  - '**/*.yml'
+  - '**/*.json'
+  - '**/*.env*'
+
+bugfix:
+  - any: ['**/*']
+    all: ['**/*fix*/**']
+
+feature:
+  - any: ['**/*']
+    all: ['**/*feature*/**'] 
