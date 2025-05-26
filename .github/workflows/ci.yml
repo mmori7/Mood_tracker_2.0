@@ -1,0 +1,109 @@
+name: Python CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov flake8
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Set up GEMINI_API_KEY for tests
+      run: |
+        echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+    
+    - name: Create test directory and file
+      run: |
+        mkdir -p tests
+        if [ ! -f tests/test_mood_tracker.py ]; then
+          cat > tests/test_mood_tracker.py << 'EOF'
+import unittest
+import os
+import sys
+import pandas as pd
+from unittest.mock import patch, MagicMock
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Import the app with mocked dependencies
+with patch('streamlit.text_area', return_value="I am feeling good today"):
+    with patch('streamlit.button', return_value=False):
+        with patch('streamlit.subheader'):
+            import mood_tracker
+
+class TestMoodTracker(unittest.TestCase):
+    def setUp(self):
+        # Create a temporary file for testing
+        self.test_file = "test_mood_history.csv"
+        mood_tracker.FILE_PATH = self.test_file
+        
+        # Initialize the CSV file
+        mood_tracker.initialize_csv()
+    
+    def tearDown(self):
+        # Remove test file after tests
+        if os.path.exists(self.test_file):
+            os.remove(self.test_file)
+    
+    def test_initialize_csv(self):
+        """Test that initialize_csv creates a new CSV file with correct headers"""
+        # File should exist after initialize_csv
+        self.assertTrue(os.path.exists(self.test_file))
+        
+        # Check headers
+        df = pd.read_csv(self.test_file)
+        expected_columns = ['Date', 'Input', 'Mood', 'Detailed Analysis']
+        self.assertListEqual(list(df.columns), expected_columns)
+    
+    def test_log_mood(self):
+        """Test that log_mood correctly adds an entry to the CSV"""
+        test_input = "I am feeling happy"
+        test_analysis = "This text shows positive sentiment"
+        
+        # Log a mood
+        mood_tracker.log_mood(test_input, test_analysis)
+        
+        # Verify entry was added
+        df = pd.read_csv(self.test_file)
+        self.assertEqual(len(df), 1)
+        self.assertEqual(df.iloc[0]['Input'], test_input)
+        self.assertEqual(df.iloc[0]['Mood'], "Positive")
+        self.assertEqual(df.iloc[0]['Detailed Analysis'], test_analysis)
+
+if __name__ == '__main__':
+    unittest.main()
+EOF
+        fi
+    
+    - name: Test with pytest
+      run: |
+        pytest tests/ --cov=. --cov-report=xml
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        fail_ci_if_error: false 

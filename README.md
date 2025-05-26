@@ -53,6 +53,37 @@ pip install -r requirements.txt
 ```
 streamlit run mood_tracker.py
 ```
+
+## 🔄 CI/CD Workflow
+
+This project uses GitHub Actions for continuous integration:
+
+### 📋 **CI Pipeline**
+- Runs automatically on every push and pull request
+- Performs linting with flake8
+- Runs unit tests with pytest
+- Generates test coverage reports
+
+### 🏷️ **PR Labeling**
+Pull requests are automatically labeled based on the files changed:
+- `documentation`: Changes to README and other markdown files
+- `tests`: Changes to test files
+- `dependencies`: Updates to requirements.txt or other dependency files
+- `ui`: Changes to the Streamlit UI components
+- `workflow`: Updates to GitHub Actions or CI configuration
+- `configuration`: Changes to configuration files
+- `bugfix`: Bug fixes
+- `feature`: New features
+
+### 🧪 **Running Tests Locally**
+```bash
+# Install test dependencies
+pip install pytest pytest-cov flake8
+
+# Run tests
+pytest tests/
+```
+
 🌐 Live Demo
 Try the AI Mood Tracker here! 🚀
 
