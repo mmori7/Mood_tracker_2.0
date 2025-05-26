@@ -84,19 +84,13 @@ pip install pytest pytest-cov flake8
 pytest tests/
 ```
 
-🌐 Live Demo
-Try the AI Mood Tracker here! 🚀
+## 🌐 Live Demo
+Try the [AI Mood Tracker here](https://moodtracker20-kx8geglx7f75uhuhxnnph2.streamlit.app/)! 🚀
 
-📜 License
+---
+
+## 📜 License
 This project is licensed under the MIT License.
-
-### **Why This Works?**
-✅ Fixes the numbering issue.  
-✅ Removes duplicate sections.  
-✅ Keeps everything structured professionally.  
-
-
-
 
 
 
